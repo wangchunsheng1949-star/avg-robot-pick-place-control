@@ -1,0 +1,296 @@
+{
+  "task_name": "标准货架搬运循环",
+  "version": "1.0",
+  "description": "在货架间循环取放货的标准流程",
+  "metadata": {
+    "name": "标准货架搬运循环",
+    "version": "1.0",
+    "description": "在货架间循环取放货的标准流程",
+    "task_type": "pick_and_place",
+    "loop": true,
+    "max_runtime_hours": 8
+  },
+  "locations": {
+    "charging_point": {
+      "x": 0.00,
+      "y": 0.00,
+      "theta": 0.00,
+      "zoneType": 3,
+      "description": "充电站位置",
+      "is_charge_station": true
+    },
+    "working_point": {
+      "x": 0.00,
+      "y": 0.00,
+      "theta": 0.00,
+      "zoneType": 0,
+      "description": "默认工作起始位"
+    },
+    "shelf_a": {
+      "x": 0.00,
+      "y": 0.00,
+      "theta": 0.00,
+      "zoneType": 0,
+      "description": "货架A位置"
+    },
+    "shelf_b": {
+      "x": 0.00,
+      "y": 0.00,
+      "theta": 0.00,
+      "zoneType": 0,
+      "description": "货架B位置"
+    },
+    "shelf_c": {
+      "x": 0.00,
+      "y": 0.00,
+      "theta": 0.00,
+      "zoneType": 0,
+      "description": "货架C位置"
+    }
+  },
+  "lift_config": {
+    "min_height": 600.0,
+    "max_height": 8000.0,
+    "speed": 500.0,
+    "unit": "mm",
+    "default_pick_height": 1950.0,
+    "default_place_height": 7630.0
+  },
+  "power_strategy": {
+    "low_threshold": 20,
+    "target_level": 80,
+    "default_power": 50,
+    "check_interval": 10,
+    "report_interval": 1800,
+    "emergency_threshold": 5
+  },
+  "control_logic": {
+    "max_runtime_hours": 8,
+    "battery_low_threshold": 20,
+    "battery_high_threshold": 80,
+    "battery_emergency_threshold": 5,
+    "word_log_interval_hours": 2,
+    "cycle_pause_seconds": 2.0,
+    "max_retry": 3,
+    "retry_delay": 2.0,
+    "command_timeout": 120,
+    "external_action_timeout": 60
+  },
+  "task_sequences": {
+    "main_sequence": {
+      "description": "主搬运序列 - 按instructions顺序执行",
+      "repeat": -1,
+      "is_main_loop": true,
+      "steps_source": "instructions"
+    },
+    "charge_sequence": {
+      "description": "充电流程",
+      "repeat": 1,
+      "is_charge_sequence": true,
+      "steps": [
+        {
+          "id": "charge_go",
+          "action": "move",
+          "description": "前往充电站",
+          "location_ref": "charging_point",
+          "lift_height": 600.0,
+          "zone_type": 3,
+          "max_speed": 1.0
+        },
+        {
+          "id": "charge_wait",
+          "action": "wait_for_charge",
+          "description": "等待充电完成",
+          "target_battery": 80,
+          "timeout_minutes": 240,
+          "check_interval_seconds": 300
+        },
+        {
+          "id": "charge_return",
+          "action": "move",
+          "description": "返回工作点",
+          "location_ref": "working_point",
+          "lift_height": 600.0,
+          "zone_type": 0,
+          "max_speed": 1.0
+        }
+      ]
+    }
+  },
+  "instructions": [
+    {
+      "id": 1,
+      "type": "EXTERNAL",
+      "action": "TAKE",
+      "location_ref": "shelf_a",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 1,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "从货架A取货（低位）"
+    },
+    {
+      "id": 2,
+      "type": "EXTERNAL",
+      "action": "PUT",
+      "location_ref": "shelf_a",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 7630,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "向货架A放货（高位）"
+    },
+    {
+      "id": 3,
+      "type": "EXTERNAL",
+      "action": "TAKE",
+      "location_ref": "shelf_a",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 7630,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "从货架A取货（高位）"
+    },
+    {
+      "id": 4,
+      "type": "EXTERNAL",
+      "action": "PUT",
+      "location_ref": "shelf_a",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 1,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "向货架A放货（低位）"
+    },
+    {
+      "id": 5,
+      "type": "MOVE",
+      "location_ref": "shelf_b",
+      "description": "移动到货架B"
+    },
+    {
+      "id": 6,
+      "type": "EXTERNAL",
+      "action": "TAKE",
+      "location_ref": "shelf_b",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "从货架B取货"
+    },
+    {
+      "id": 7,
+      "type": "MOVE",
+      "location_ref": "shelf_c",
+      "description": "移动到货架C"
+    },
+    {
+      "id": 8,
+      "type": "EXTERNAL",
+      "action": "PUT",
+      "location_ref": "shelf_c",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 7630,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "向货架C放货（高位）"
+    },
+    {
+      "id": 9,
+      "type": "EXTERNAL",
+      "action": "TAKE",
+      "location_ref": "shelf_c",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "从货架C取货（低位）"
+    },
+    {
+      "id": 10,
+      "type": "MOVE",
+      "location_ref": "shelf_b",
+      "description": "移动到货架B"
+    },
+    {
+      "id": 11,
+      "type": "EXTERNAL",
+      "action": "PUT",
+      "location_ref": "shelf_b",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "向货架B放货"
+    },
+    {
+      "id": 12,
+      "type": "MOVE",
+      "location_ref": "shelf_c",
+      "description": "移动到货架C"
+    },
+    {
+      "id": 13,
+      "type": "EXTERNAL",
+      "action": "TAKE",
+      "location_ref": "shelf_c",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 7630,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "从货架C取货（高位）"
+    },
+    {
+      "id": 14,
+      "type": "EXTERNAL",
+      "action": "PUT",
+      "location_ref": "shelf_c",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 0,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "向货架C放货（低位）"
+    },
+    {
+      "id": 15,
+      "type": "MOVE",
+      "location_ref": "shelf_a",
+      "description": "移动到货架A"
+    },
+    {
+      "id": 16,
+      "type": "EXTERNAL",
+      "action": "TAKE",
+      "location_ref": "shelf_a",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 1,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "从货架A取货"
+    },
+    {
+      "id": 17,
+      "type": "EXTERNAL",
+      "action": "PUT",
+      "location_ref": "shelf_a",
+      "position": {"x": 0.00, "y": 0.00, "theta": 0.00},
+      "height": 1950,
+      "locationType": 1,
+      "binType": 10,
+      "binModel": "STANDARD0",
+      "description": "向货架A放货"
+    }
+  ]
+}
